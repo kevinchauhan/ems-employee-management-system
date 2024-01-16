@@ -16,7 +16,7 @@ const Nav = () => {
                     <li className='py-1 pr-3' ><Link to='/admin/employee' className='hover:bg-primary hover:text-white rounded-r-full font-medium w-full inline-block py-2 pl-10'>Employee</Link></li>
                     <li className='py-1 pr-3' ><Link to='/admin/salary' className='hover:bg-primary hover:text-white rounded-r-full font-medium w-full inline-block py-2 pl-10'>Salary</Link></li>
                     <li className='py-1 pr-3' ><Link to='/admin/dashboard' className='hover:bg-primary hover:text-white rounded-r-full font-medium w-full inline-block py-2 pl-10'>Leave Requests</Link></li>
-                    <li className='py-1 pr-3' ><Link to='/admin/dashboard' className='hover:bg-primary hover:text-white rounded-r-full font-medium w-full inline-block py-2 pl-10'>Report</Link></li>
+                    <li className='py-1 pr-3' ><Link to='/admin/report/leaves' className='hover:bg-primary hover:text-white rounded-r-full font-medium w-full inline-block py-2 pl-10'>Report</Link></li>
                 </ul>
             </div>
         </nav>

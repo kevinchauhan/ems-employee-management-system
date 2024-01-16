@@ -1,13 +1,12 @@
-import React, { useState } from 'react'
-// import { useDispatch, useSelector } from 'react-redux'
-// import { modalAction } from '../store/store'
+import React from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { modalAction } from '../../store/store'
 
 const Modal = ({ children }) => {
-    const isActive = false
-    // useSelector(state => state.modal)
-    // const dispatch = useDispatch()
+    const isActive = useSelector(state => state.modal)
+    const dispatch = useDispatch()
     const handleModal = () => {
-        // dispatch(modalAction.toggleModal())
+        dispatch(modalAction.toggleModal())
     }
     return (
         <div className={`relative z-10 ${isActive ? '' : 'hidden'}`} aria-labelledby="modal-title" role="dialog" aria-modal="true">
