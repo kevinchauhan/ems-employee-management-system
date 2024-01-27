@@ -5,24 +5,26 @@ import { addData } from '../../../firebase/firebaseSevice'
 const AddEmployee = () => {
     const INITIAL_INPUT = {
         empId: '101',
-        name: 'kevin',
-        surname: 'chauhan',
-        email: 'kevin@gmail.com',
-        password: '123456',
-        confirmPassword: '123456',
+        name: 'abc',
+        surname: 'xyz',
+        email: 'abc@gmail.com',
+        password: 'Abc@1234',
+        confirmPassword: 'Abc@1234',
         mobile: '1234567895',
-        dob: '',
-        doj: '',
+        dob: '1999-01-10',
+        doj: '2024-01-24',
         country: 'india',
         state: 'gujarat',
         city: 'surat',
         address: 'abc society',
-        // department: 'IT'
+        department: 'V7q1kcEqLAvEnpHJQtWB'
     }
     const handleForm = async (inputValue) => {
-        await addData('employees', inputValue)
+        const res = await addData('employees', inputValue)
+        return res
     }
-    return <EmployeeForm handleForm={handleForm} input={INITIAL_INPUT} />
+    // return <EmployeeFormHook handleForm={handleForm} input={INITIAL_INPUT} />
+    return <EmployeeForm handleForm={handleForm} />
 }
 
 export default AddEmployee

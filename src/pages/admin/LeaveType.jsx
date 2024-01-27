@@ -50,7 +50,7 @@ const LeaveType = () => {
             <Modal>
                 <Form handleForm={handleForm} title={'Leave Type'} editId={editId} />
             </Modal>
-            <TableUi title={'Manage Leaves'}>
+            <TableUi title={'Manage Leaves'} isBtn={true}>
                 <ManageTable title={'Type Of Leave'} data={leaveTypes} handleEdit={handleEdit} handleDelete={handleDelete} />
             </TableUi>
         </>

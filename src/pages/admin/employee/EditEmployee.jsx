@@ -13,14 +13,15 @@ const EditEmployee = () => {
 
     const fetchData = async () => {
         const res = await getSingleData('employees', id)
-        setInputValue(res)
+        setInputValue({ ...res, department: res.department.id })
     }
 
     const handleForm = async (inputValue) => {
         await updateData('employees', inputValue, id)
+        return id
     }
 
-    return <EmployeeForm handleForm={handleForm} input={inputValue} />
+    return <EmployeeForm handleForm={handleForm} input={inputValue} isEdit={true} />
 }
 
 export default EditEmployee

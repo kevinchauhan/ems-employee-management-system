@@ -4,14 +4,14 @@ import { Link } from 'react-router-dom'
 import { collection, getDocs, limit, orderBy, query } from 'firebase/firestore'
 import { db } from '../../../firebase/firebaseConfig'
 
-const Button = () => <Link to='/admin/salary/add' className='bg-primary  text-white px-2 py-1 rounded'>Add</Link>
+const Button = () => <Link to='/admin/salary/add' className='bg-primary text-white px-2 py-1 rounded'>Add</Link>
 
 const Salary = () => {
     const [datas, setDatas] = useState([])
     useEffect(() => {
         fetchData()
     }, [])
-
+    console.log(datas)
     const fetchData = async () => {
         const employeesColRef = collection(db, "employees");
         const fetchEmployeesWithLatestSalary = async () => {
@@ -29,13 +29,13 @@ const Salary = () => {
                     if (!latestSalarySnapshot.empty) {
                         const latestSalary = latestSalarySnapshot.docs[0].data();
                         result.push({
+                            id: employeeDoc.id,
                             ...employeeDoc.data(),
                             latestSalary,
                         });
                     }
                 }
 
-                console.log(result);
                 setDatas(result);
             } catch (error) {
                 console.error('Error fetching data:', error);
@@ -67,7 +67,7 @@ const Salary = () => {
                                 <td className="border border-gray-300 py-2 px-4">{data.department.name}</td>
                                 <td className="border border-gray-300 py-2 px-4">{data.latestSalary.salary}</td>
                                 <td className="border border-gray-300 py-2 px-4">
-                                    <Link to={`/admin/employee/view/${data.id}`} className='bg-blue-600 hover:bg-blue-700 rounded px-3 py-2 text-white'>view</Link>
+                                    <Link to={`/admin/employee/salary/${data.id}`} className='bg-blue-600 hover:bg-blue-700 rounded px-3 py-2 text-white'>view</Link>
                                     <button onClick={() => handleEdit(data)} className='bg-green-600 rounded px-3 py-2 ml-2 text-white'>Edit</button>
                                 </td>
                             </tr>

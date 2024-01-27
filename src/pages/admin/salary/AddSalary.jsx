@@ -4,12 +4,14 @@ import Input from '../../../Components/shared/Input'
 import { getData, updateData } from '../../../firebase/firebaseSevice'
 import { addDoc, collection, doc, getDocs, getFirestore, query, where } from 'firebase/firestore'
 import app, { db } from '../../../firebase/firebaseConfig'
+import { useNavigate } from 'react-router-dom'
 
 const AddSalary = () => {
     const [inputValue, setInputValue] = useState({ department: '', emp: '', salary: '' })
     const [error, setError] = useState('')
     const [departments, setDepartments] = useState([])
     const [emps, setEmps] = useState([])
+    const navigate = useNavigate()
 
     useEffect(() => {
         fetchData()
@@ -59,8 +61,8 @@ const AddSalary = () => {
                 salary: inputValue.salary,
             }
 
-            addDoc(salaryHistoryColRef, newSalaryHistory)
-
+            await addDoc(salaryHistoryColRef, newSalaryHistory)
+            navigate(-1)
             // console.log(await updateData('employees', { salary: inputValue.salary }, inputValue.emp))
         } catch (error) {
             console.log(error)
@@ -98,7 +100,7 @@ const AddSalary = () => {
                         </select>
                     </div>
                     <div>
-                        <Input name={'salary'} label='Salary' type="text" placeholder="Enter your salary" value={inputValue.salary} onChange={handleInputChange} validate={customValidation} error={error} />
+                        <Input name={'salary'} label='Salary' type="text" placeholder="Enter your salary" value={inputValue.salary} onChange={handleInputChange} error={error} />
                     </div>
                 </div>
                 <button className='bg-primary text-white mt-3 px-5 py-1 rounded'>Submit</button>

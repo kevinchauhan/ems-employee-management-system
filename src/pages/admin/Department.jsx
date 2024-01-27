@@ -51,7 +51,7 @@ const Department = () => {
             <Modal>
                 <Form handleForm={handleForm} title={'Department'} editId={editId} />
             </Modal>
-            <TableUi title={'Manage Department'} >
+            <TableUi title={'Manage Department'} isBtn={true} >
                 <ManageTable title={'name'} data={departments} handleEdit={handleEdit} handleDelete={handleDelete} />
             </TableUi>
         </>

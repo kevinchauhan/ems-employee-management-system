@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react'
-import TableUi from '../shared/TableUi'
-import { downloadImage, getData, queryData, updateData, uploadImage } from '../../firebase/firebaseSevice'
+import { downloadImage, getData, getSingleData, queryData, updateData, uploadImage } from '../../firebase/firebaseSevice'
 import { where } from 'firebase/firestore'
-import { createUserWithEmailAndPassword, inMemoryPersistence, setPersistence } from "firebase/auth"
-import { auth } from '../../firebase/firebaseConfig'
-import { useNavigate } from 'react-router-dom'
+import { createUserWithEmailAndPassword, inMemoryPersistence, setPersistence } from "firebase/auth";
+import { auth } from '../../firebase/firebaseConfig';
+import { useNavigate } from 'react-router-dom';
+import TableUi from '../../Components/shared/TableUi';
+import { useSelector } from 'react-redux';
 
-const EmployeeForm = ({ handleForm, input, isEdit }) => {
+const Profile = () => {
     const INITIAL_INPUT = {
         empId: '',
         name: '',
@@ -25,33 +26,38 @@ const EmployeeForm = ({ handleForm, input, isEdit }) => {
     }
     const [departments, setDepartments] = useState([])
     const [inputValue, setInputValue] = useState(INITIAL_INPUT)
+    const [imageFile, setImageFile] = useState(null)
+    const [imageUrl, setImageUrl] = useState('')
     const [error, setError] = useState({})
     const [isValidEmail, setIsValidEmail] = useState(true)
     const [isValidEmpId, setIsValidEmpId] = useState(true)
-    const [imageFile, setImageFile] = useState(null)
-    const [imageUrl, setImageUrl] = useState('')
+    const auth = useSelector(state => state.auth)
     const navigate = useNavigate()
 
     useEffect(() => {
-        if (input) {
-            setInputValue(input)
-            fetchDp()
-        }
-    }, [input])
+        fetchDepartment()
+    }, [])
 
     useEffect(() => {
         fetchData()
-    }, [])
+    }, [auth])
 
-    const fetchData = async () => {
-        const res = await getData('departments')
-        setDepartments(res)
+    const fetchDepartment = async () => {
+        setDepartments(await getData('departments'))
     }
 
-    const fetchDp = async () => {
-        if (input.filePath) {
-            const url = await downloadImage(input.filePath)
-            setImageUrl(url)
+    const fetchData = async () => {
+        try {
+            if (auth) {
+                const res = await getSingleData('employees', auth.id)
+                setInputValue(res)
+                if (res.filePath) {
+                    const url = await downloadImage(res.filePath)
+                    setImageUrl(url)
+                }
+            }
+        } catch (error) {
+            console.log(error)
         }
     }
 
@@ -74,35 +80,17 @@ const EmployeeForm = ({ handleForm, input, isEdit }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault()
-        const department = departments.filter(e => e.id === inputValue.department)
         const checkValidate = validate(inputValue)
         if (Object.keys(checkValidate).length > 0) {
             setError(checkValidate)
         } else {
             setError({})
-            if (isEdit) {
-                const res = await handleForm({ ...inputValue, department: department[0] })
-                if (res) {
-                    if (imageFile) {
-                        await handleImage(res)
-                    }
-                    navigate(-1)
-                }
-            } else {
-                const password = input.password
-                delete inputValue.password
-                delete inputValue.confirmPassword
-                const empAuth = await createEmp(inputValue.email, password)
-                if (empAuth) {
-                    const empData = await handleForm({ ...inputValue, department: department[0], createdAt: Date(), uid: empAuth.uid })
-                    if (empData) {
-                        if (imageFile) {
-                            await handleImage(empData.id)
-                        }
-                        navigate('/admin/employee')
-                    }
-                }
+            const data = { ...inputValue }
+            await updateData('employees', data, auth.id)
+            if (imageFile) {
+                await handleImage(auth.id)
             }
+            fetchData()
         }
     }
 
@@ -111,7 +99,7 @@ const EmployeeForm = ({ handleForm, input, isEdit }) => {
         const fileExt = imageFile.name.split('.')[1]
         const filePath = `employees/dp/${empId}.${fileExt}`
         await uploadImage(imageFile, filePath)
-        updateData('employees', { filePath }, empId)
+        await updateData('employees', { filePath }, empId)
     }
 
     const validate = (input) => {
@@ -147,25 +135,6 @@ const EmployeeForm = ({ handleForm, input, isEdit }) => {
             errors.address = 'please enter address'
         }
 
-        if (!isEdit) {
-            if (input.password.length < 1) {
-                errors.password = 'please enter an password'
-            } else {
-                const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
-                if (!passwordRegex.test(input.password)) {
-                    errors.password = 'At least one UPPERCASE, lowercase, digit, special character and minimum length of 8 characters.'
-                }
-            }
-
-            if (input.confirmPassword.length < 1) {
-                errors.password = 'please confirm your password'
-            } else {
-                if (input.confirmPassword !== input.password) {
-                    errors.confirmPassword = 'It does not match password'
-                }
-            }
-        }
-
         return errors
     }
 
@@ -194,45 +163,13 @@ const EmployeeForm = ({ handleForm, input, isEdit }) => {
         }
     }
 
-    const handleEmpId = async (e) => {
-        const empId = e.target.value
-        if (empId.length < 1) {
-            setIsValidEmpId(false)
-            setError({ ...error, empId: 'please enter an empId' })
-        } else {
-            const result = await queryData('employees', where("empId", "==", empId))
-            if (result.length > 0) {
-                setError({ ...error, empId: 'EmpId already exists' })
-                setIsValidEmpId(false)
-            } else {
-                setError({})
-                // setError({ ...error, empId: 'EmpId is available' })
-                setIsValidEmpId(true)
-            }
-        }
-    }
-
-    const createEmp = async (email, password) => {
-        try {
-            setPersistence(auth, inMemoryPersistence)
-            const userCredential = await createUserWithEmailAndPassword(auth, email, password)
-            const user = userCredential.user
-            return user
-        } catch (error) {
-            console.log(error)
-            const errorCode = error.code
-            const errorMessage = error.message
-            // ..
-        }
-    }
 
     return (
-        <TableUi title={'Add Employee'}>
+        <TableUi title={'Profile'}>
             <form action="" onSubmit={handleSubmit} className='text-gray-700' noValidate>
                 <div className='mb-7'>
                     <label htmlFor="">Emp Id</label>
-                    <input className={`border ${!error.empId || isValidEmpId ? 'border-gray-300' : 'border-red-500'} w-full rounded-md mt-2 py-2 px-3`} name='empId' label='Emp ID' type="text" placeholder="Enter emp id" value={inputValue.empId} onChange={handleInputChange} onBlur={handleEmpId} error={error.empId} autoComplete='false' disabled={isEdit} />
-                    {error && <p className={`${isValidEmpId ? 'text-green-500' : 'text-red-500'} text-sm`}>{error.empId}</p>}
+                    <input className={`border ${!error.empId || isValidEmpId ? 'border-gray-300' : 'border-red-500'} w-full rounded-md mt-2 py-2 px-3`} name='empId' label='Emp ID' type="text" placeholder="Enter emp id" value={inputValue.empId} autoComplete='false' disabled={true} />
                 </div>
                 <div className="grid grid-cols-2 gap-5">
                     <div className='mb-5'>
@@ -248,7 +185,7 @@ const EmployeeForm = ({ handleForm, input, isEdit }) => {
                     <div className='mb-5'>
                         <label htmlFor=""></label>
                         <label htmlFor="">Department</label>
-                        <select name="department" value={inputValue.department} onChange={handleInputChange} className={`border ${!error.department ? 'border-gray-300' : 'border-red-500'} w-full rounded-md mt-2 py-2 px-3`}>
+                        <select disabled={true} name="department" value={inputValue.department.id} className={`border ${!error.department ? 'border-gray-300' : 'border-red-500'} w-full rounded-md mt-2 py-2 px-3`}>
                             <option value="">--Select Deartment--</option>
                             {
                                 departments.map(item =>
@@ -256,17 +193,14 @@ const EmployeeForm = ({ handleForm, input, isEdit }) => {
                                 )
                             }
                         </select>
-                        {error && <p className="text-red-500 text-sm">{error.department}</p>}
                     </div>
                     <div className='mb-5'>
                         <label htmlFor="">Email ID</label>
-                        <input className={`border ${!error.email || isValidEmail ? 'border-gray-300' : 'border-red-500'} w-full rounded-md mt-2 py-2 px-3`} name='email' type="email" placeholder="Enter your Email ID" value={inputValue.email} onChange={handleInputChange} onBlur={handleEmail} error={error.email} autoComplete='false' disabled={isEdit} />
-                        {error && <p className={`${isValidEmail ? 'text-green-500' : 'text-red-500'} text-sm`}>{error.email}</p>}
+                        <input className={`border ${!error.email || isValidEmail ? 'border-gray-300' : 'border-red-500'} w-full rounded-md mt-2 py-2 px-3`} name='email' type="email" placeholder="Enter your Email ID" value={inputValue.email} autoComplete='false' disabled={true} />
                     </div>
                     <div className='mb-5'>
                         <label htmlFor="">Mobile no.</label>
-                        <input className={`border ${!error.mobile ? 'border-gray-300' : 'border-red-500'} w-full rounded-md mt-2 py-2 px-3`} name='mobile' type="text" placeholder="Enter your mobile no." value={inputValue.mobile} onChange={handleInputChange} error={error.mobile} />
-                        {error && <p className="text-red-500 text-sm">{error.mobile}</p>}
+                        <input className={`border ${!error.mobile ? 'border-gray-300' : 'border-red-500'} w-full rounded-md mt-2 py-2 px-3`} name='mobile' type="text" placeholder="Enter your mobile no." value={inputValue.mobile} disabled={true} />
                     </div>
                     <div className='mb-5'>
                         <label htmlFor="">Country</label>
@@ -290,18 +224,17 @@ const EmployeeForm = ({ handleForm, input, isEdit }) => {
                     </div>
                     <div className='mb-5'>
                         <label htmlFor="">Date of Joining</label>
-                        <input className={`border ${!error.doj ? 'border-gray-300' : 'border-red-500'} w-full rounded-md mt-2 py-2 px-3`} name='doj' type="date" placeholder="Enter your Dob" value={inputValue.doj} onChange={handleInputChange} error={error.doj} />
-                        {error && <p className="text-red-500 text-sm">{error.doj}</p>}
+                        <input className={`border ${!error.doj ? 'border-gray-300' : 'border-red-500'} w-full rounded-md mt-2 py-2 px-3`} name='doj' type="date" placeholder="Enter your Dob" value={inputValue.doj} disabled={true} />
                     </div>
                     <div className='mb-5'>
                         <label htmlFor="">Photo</label>
                         <input className={`border border-gray-300 w-full rounded-md mt-2 py-2 px-3`} type="file" onChange={handleFileChange} accept="image/*" />
                         {
-                            isEdit && imageUrl ?
+                            imageUrl ?
                                 <div className='border w-fit mt-2 p-1'>
-                                    <img src={imageUrl} alt="image" className='w-24 h-24 object-cover rounded-full' />
+                                    <img src={imageUrl} alt="image" className='w-24 h-24 object-contain rounded-full' />
                                 </div>
-                                : isEdit ? 'no image available' : ''
+                                : 'no image available'
                         }
                     </div>
                     <div className='mb-5'>
@@ -309,26 +242,11 @@ const EmployeeForm = ({ handleForm, input, isEdit }) => {
                         <textarea name="address" value={inputValue.address} onChange={handleInputChange} cols="30" rows="3" className={`border ${!error.address ? 'border-gray-300' : 'border-red-500'} w-full rounded-md mt-2 py-2 px-3`} placeholder='Enter your address'></textarea>
                         {error && <p className="text-red-500 text-sm">{error.address}</p>}
                     </div>
-                    {
-                        isEdit ? '' :
-                            <>
-                                <div className='mb-5'>
-                                    <label htmlFor="">Password</label>
-                                    <input className={`border ${!error.password ? 'border-gray-300' : 'border-red-500'} w-full rounded-md mt-2 py-2 px-3`} name='password' type="password" placeholder="Enter your password" value={inputValue.password} onChange={handleInputChange} error={error.password} />
-                                    {error && <p className="text-red-500 text-sm">{error.password}</p>}
-                                </div>
-                                <div className='mb-5'>
-                                    <label htmlFor="">Confirm Password</label>
-                                    <input className={`border ${!error.confirmPassword ? 'border-gray-300' : 'border-red-500'} w-full rounded-md mt-2 py-2 px-3`} name='confirmPassword' type="text" placeholder="Confirm your password" value={inputValue.confirmPassword} onChange={handleInputChange} error={error.confirmPassword} />
-                                    {error && <p className="text-red-500 text-sm">{error.confirmPassword}</p>}
-                                </div>
-                            </>
-                    }
                 </div>
-                <button className='bg-primary text-white mt-3 px-5 py-1 rounded'>{isEdit ? 'Update' : 'Submit'}</button>
+                <button className='bg-primary text-white mt-3 px-5 py-1 rounded'>Update</button>
             </form>
         </TableUi>
     )
 }
 
-export default EmployeeForm
+export default Profile
