@@ -89,7 +89,7 @@ const EmployeeForm = ({ handleForm, input, isEdit }) => {
                     navigate(-1)
                 }
             } else {
-                const password = input.password
+                const password = inputValue.password
                 delete inputValue.password
                 delete inputValue.confirmPassword
                 const empAuth = await createEmp(inputValue.email, password)
