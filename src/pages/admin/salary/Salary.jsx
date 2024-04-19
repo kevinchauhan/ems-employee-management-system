@@ -11,7 +11,7 @@ const Salary = () => {
     useEffect(() => {
         fetchData()
     }, [])
-    console.log(datas)
+
     const fetchData = async () => {
         const employeesColRef = collection(db, "employees");
         const fetchEmployeesWithLatestSalary = async () => {
@@ -68,7 +68,7 @@ const Salary = () => {
                                 <td className="border border-gray-300 py-2 px-4">{data.latestSalary.salary}</td>
                                 <td className="border border-gray-300 py-2 px-4">
                                     <Link to={`/admin/employee/salary/${data.id}`} className='bg-blue-600 hover:bg-blue-700 rounded px-3 py-2 text-white'>view</Link>
-                                    <button onClick={() => handleEdit(data)} className='bg-green-600 rounded px-3 py-2 ml-2 text-white'>Edit</button>
+                                    {/* <button onClick={() => handleEdit(data)} className='bg-green-600 rounded px-3 py-2 ml-2 text-white'>Edit</button> */}
                                 </td>
                             </tr>
                         )

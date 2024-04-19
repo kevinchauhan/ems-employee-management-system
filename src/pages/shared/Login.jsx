@@ -8,7 +8,7 @@ import { queryData } from '../../firebase/firebaseSevice';
 import { where } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 
-const login = () => {
+const Login = () => {
     const [inputValue, setInputValue] = useState({ email: '', password: '' })
     const [error, setError] = useState('')
     const authRedux = useSelector(state => state.auth)
@@ -54,7 +54,7 @@ const login = () => {
 
 
     return (
-        <div className='h-screen relative bg-gray-100 z-0'>
+        <div className='min-h-screen relative bg-gray-100 z-0 pb-5'>
             <div className="absolute bg-primary w-full h-1/2 top-0 left-0 z-[-1]"></div>
             <h1 className='w-full text-center text-6xl text-white pt-10 mb-10'>Employee Management System</h1>
             <div className="flex flex-wrap items-center justify-center h-[70%]">
@@ -78,19 +78,20 @@ const login = () => {
                         />
                         <button className='bg-primary w-full text-white mt-3 px-5 py-1 rounded'>Sign In</button>
                     </form>
+                    <div className='my-2 bg-gray-100 border p-3  '>
+                        <h1>Admin Credentials:-</h1>
+                        <p>Email : admin@gmail.com</p>
+                        <p>Password : 123456</p>
+                    </div>
+                    <div className='my-2 bg-gray-100 border p-3  '>
+                        <h1>Test Employee Credentials:-</h1>
+                        <p>Email : abc@gmail.com</p>
+                        <p>Password : abc@123456</p>
+                    </div>
                 </div>
-            </div>
-            <div className='text-red-600 text-xl absolute top-[50%] left-[10%] '>
-                <h1>Admin Credentials:-</h1>
-                <p>Email : admin@gmail.com</p>
-                <p>Password : 123456</p>
-            </div>
-            <div className='text-red-600 text-xl absolute top-[50%] right-[10%] '>
-                <h1>Employee Credentials:-</h1>
-                <p>Add employee then login <br /> with entered email and password</p>
             </div>
         </div>
     )
 }
 
-export default login
+export default Login

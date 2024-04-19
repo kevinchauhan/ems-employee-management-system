@@ -151,9 +151,9 @@ const EmployeeForm = ({ handleForm, input, isEdit }) => {
             if (input.password.length < 1) {
                 errors.password = 'please enter an password'
             } else {
-                const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
+                const passwordRegex = /^(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
                 if (!passwordRegex.test(input.password)) {
-                    errors.password = 'At least one UPPERCASE, lowercase, digit, special character and minimum length of 8 characters.'
+                    errors.password = 'At least one alphabet, digit, special character and minimum length of 8 characters.'
                 }
             }
 
